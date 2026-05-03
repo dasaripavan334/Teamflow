@@ -46,19 +46,18 @@ frontend_url = os.getenv("FRONTEND_URL", "*")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-    frontend_url,
-    "http://localhost:3000",
-    "http://localhost:8000",
-    "http://127.0.0.1:8000",
-    "http://127.0.0.1:5500",
-    "http://0.0.0.0:8000",
-],
+        frontend_url,
+        "http://localhost:3000",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+        "http://127.0.0.1:5500",
+        "http://0.0.0.0:8000",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# members router removed — member endpoints now in projects router
 app.include_router(auth.router)
 app.include_router(projects.router)
 app.include_router(tasks.router)
@@ -70,5 +69,11 @@ def health():
 
 
 frontend_path = os.path.join(os.path.dirname(__file__), "../frontend")
+print(f"✅ Frontend path: {frontend_path}")
+print(f"✅ Frontend exists: {os.path.exists(frontend_path)}")
+
 if os.path.exists(frontend_path):
+    print("✅ Mounting frontend static files...")
     app.mount("/", StaticFiles(directory=frontend_path, html=True), name="frontend")
+else:
+    print("❌ Frontend folder NOT found — static files not mounted")
