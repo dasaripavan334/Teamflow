@@ -8,3 +8,5 @@ python-dotenv
 pydantic[email]
 python-multipart
 alembic
+pymysql
+cryptography
