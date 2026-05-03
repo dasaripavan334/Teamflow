@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TeamFlow — Project</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'DM Sans', sans-serif; }
+    input:focus, textarea:focus, select:focus { outline: none; box-shadow: 0 0 0 2px #111827; border-color: #111827; }
+    .task-col { min-height: 180px; }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <div id="navbar"></div>
+  <main class="max-w-7xl mx-auto px-6 py-8">
+    <!-- Breadcrumb -->
+    <nav class="flex items-center gap-2 mb-6 text-xs">
+      <a href="/projects.html" class="text-gray-400 hover:text-gray-600 transition-colors flex items-center gap-1">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+        Projects
+      </a>
+      <svg class="w-3 h-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      <span class="text-gray-700 font-medium" id="proj-name-breadcrumb">Loading...</span>
+    </nav>
+
+    <!-- Project Header -->
+    <div class="flex items-start justify-between mb-6">
+      <div>
+        <h1 class="text-xl font-semibold text-gray-900" id="proj-title">—</h1>
+        <p class="text-sm text-gray-500 mt-0.5" id="proj-desc">—</p>
+      </div>
+      <button onclick="openTaskModal()" id="btn-add-task"
+        class="hidden inline-flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-800 active:scale-[0.99] transition-all flex-shrink-0 ml-4">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        Add Task
+      </button>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex items-center gap-0 border-b border-gray-200 mb-6">
+      <button onclick="switchTab('board')" id="tab-board"
+        class="px-4 py-2.5 text-sm font-medium border-b-2 border-gray-900 text-gray-900 -mb-px transition-all">
+        <span class="flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/></svg>
+          Board
+        </span>
+      </button>
+      <button onclick="switchTab('members')" id="tab-members"
+        class="px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-gray-500 -mb-px hover:text-gray-700 transition-all">
+        <span class="flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          Members
+        </span>
+      </button>
+    </div>
+
+    <!-- Board Tab -->
+    <div id="tab-content-board">
+      <div class="flex items-center gap-3 mb-5 flex-wrap">
+        <select id="filter-status" onchange="loadTasks()" class="px-3 py-1.5 border border-gray-200 rounded-lg text-xs text-gray-600 bg-white hover:border-gray-300 transition-colors">
+          <option value="">All Status</option>
+          <option value="todo">To Do</option>
+          <option value="in_progress">In Progress</option>
+          <option value="done">Done</option>
+        </select>
+        <select id="filter-priority" onchange="loadTasks()" class="px-3 py-1.5 border border-gray-200 rounded-lg text-xs text-gray-600 bg-white hover:border-gray-300 transition-colors">
+          <option value="">All Priority</option>
+          <option value="high">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>
+        </select>
+        <button onclick="loadTasks()" class="px-3 py-1.5 text-xs text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors flex items-center gap-1">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+          Refresh
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+          <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-gray-50">
+            <div class="flex items-center gap-2">
+              <div class="w-2 h-2 bg-gray-400 rounded-full"></div>
+              <span class="text-xs font-semibold text-gray-600 uppercase tracking-wide">To Do</span>
+            </div>
+            <span id="count-todo" class="text-xs font-semibold text-gray-400 bg-gray-100 w-5 h-5 rounded-full flex items-center justify-center">0</span>
+          </div>
+          <div id="col-todo" class="p-3 task-col space-y-2"></div>
+        </div>
+        <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+          <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-blue-50">
+            <div class="flex items-center gap-2">
+              <div class="w-2 h-2 bg-blue-400 rounded-full"></div>
+              <span class="text-xs font-semibold text-blue-700 uppercase tracking-wide">In Progress</span>
+            </div>
+            <span id="count-in_progress" class="text-xs font-semibold text-blue-500 bg-blue-100 w-5 h-5 rounded-full flex items-center justify-center">0</span>
+          </div>
+          <div id="col-in_progress" class="p-3 task-col space-y-2"></div>
+        </div>
+        <div class="bg-white border border-gray-200 rounded-xl overflow-hidden">
+          <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between bg-green-50">
+            <div class="flex items-center gap-2">
+              <div class="w-2 h-2 bg-green-400 rounded-full"></div>
+              <span class="text-xs font-semibold text-green-700 uppercase tracking-wide">Done</span>
+            </div>
+            <span id="count-done" class="text-xs font-semibold text-green-500 bg-green-100 w-5 h-5 rounded-full flex items-center justify-center">0</span>
+          </div>
+          <div id="col-done" class="p-3 task-col space-y-2"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Members Tab -->
+    <div id="tab-content-members" class="hidden">
+      <div class="bg-white border border-gray-200 rounded-xl overflow-hidden max-w-2xl">
+        <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
+          <h3 class="text-sm font-semibold text-gray-900">Team Members</h3>
+          <p class="text-xs text-gray-400 mt-0.5">People assigned to this project</p>
+        </div>
+        <div id="members-list">
+          <div class="flex items-center justify-center py-10">
+            <div class="w-5 h-5 border-2 border-gray-200 border-t-gray-900 rounded-full animate-spin"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Task Modal -->
+  <div id="task-modal" class="hidden fixed inset-0 bg-black bg-opacity-25 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+        <h2 class="text-base font-semibold text-gray-900" id="task-modal-title">New Task</h2>
+        <button onclick="closeTaskModal()" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="p-6 space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1.5 uppercase tracking-wide">Title <span class="text-red-400">*</span></label>
+          <input type="text" id="task-title" placeholder="What needs to be done?"
+            class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 transition-all"/>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1.5 uppercase tracking-wide">Description</label>
+          <textarea id="task-desc" rows="2" placeholder="Add more details..."
+            class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 transition-all resize-none"></textarea>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1.5 uppercase tracking-wide">Status</label>
+            <select id="task-status" class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-white transition-all">
+              <option value="todo">To Do</option>
+              <option value="in_progress">In Progress</option>
+              <option value="done">Done</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1.5 uppercase tracking-wide">Priority</label>
+            <select id="task-priority" class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-white transition-all">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1.5 uppercase tracking-wide">Assignee</label>
+            <select id="task-assignee" class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 bg-white transition-all">
+              <option value="">Unassigned</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1.5 uppercase tracking-wide">Due Date</label>
+            <input type="date" id="task-due" class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 transition-all"/>
+          </div>
+        </div>
+        <div id="task-error" class="hidden flex items-center gap-2 p-3 bg-red-50 border border-red-100 rounded-xl">
+          <svg class="w-4 h-4 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <p id="task-error-text" class="text-xs text-red-600"></p>
+        </div>
+      </div>
+      <div class="flex gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50">
+        <button onclick="closeTaskModal()" class="flex-1 px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-white transition-colors">Cancel</button>
+        <button onclick="saveTask()" id="btn-save-task" class="flex-1 px-4 py-2.5 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-gray-800 active:scale-[0.99] transition-all">Create Task</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Member Status Modal (for members) -->
+  <div id="status-modal" class="hidden fixed inset-0 bg-black bg-opacity-25 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+        <h2 class="text-base font-semibold text-gray-900">Update Task Status</h2>
+        <button onclick="closeStatusModal()" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="p-6">
+        <p class="text-sm text-gray-600 mb-1 font-medium" id="status-task-title"></p>
+        <p class="text-xs text-gray-400 mb-5">Select new status for this task</p>
+        <div class="space-y-2" id="status-options"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/env.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/navbar.js"></script>
+  <script>
+    requireAuth();
+    renderNavbar('projects');
+
+    const params = new URLSearchParams(window.location.search);
+    const projectId = params.get('id');
+    if (!projectId) window.location.href = '/projects.html';
+
+    const isAdmin = api.getUser()?.role === 'admin';
+    if (isAdmin) document.getElementById('btn-add-task').classList.remove('hidden');
+
+    let projectMembers = [];
+    let editingTaskId = null;
+
+    async function loadProject() {
+      try {
+        const p = await api.get(`/projects/${projectId}`);
+        document.getElementById('proj-title').textContent = p.name;
+        document.getElementById('proj-desc').textContent = p.description || 'No description';
+        document.getElementById('proj-name-breadcrumb').textContent = p.name;
+        document.title = `TeamFlow — ${p.name}`;
+      } catch (e) { showToast(e.message, 'error'); }
+    }
+
+    async function loadMembers() {
+      try {
+        projectMembers = await api.get(`/projects/${projectId}/members`);
+        renderMembers(projectMembers);
+        const sel = document.getElementById('task-assignee');
+        // Clear old options except "Unassigned"
+        while (sel.options.length > 1) sel.remove(1);
+        projectMembers.forEach(m => {
+          const opt = new Option(m.name, m.id);
+          sel.add(opt);
+        });
+      } catch (e) { showToast(e.message, 'error'); }
+    }
+
+    function renderMembers(members) {
+      if (!members.length) {
+        document.getElementById('members-list').innerHTML = `<div class="flex flex-col items-center py-10 text-center"><p class="text-sm text-gray-400">No members in this project</p></div>`;
+        return;
+      }
+      document.getElementById('members-list').innerHTML = members.map(m => `
+        <div class="flex items-center justify-between px-6 py-3.5 border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 ${m.role === 'admin' ? 'bg-gray-900' : 'bg-gray-200'}">
+              <span class="${m.role === 'admin' ? 'text-white' : 'text-gray-600'} text-sm font-semibold">${m.name[0].toUpperCase()}</span>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-900">${m.name}</p>
+              <p class="text-xs text-gray-400">${m.email}</p>
+            </div>
+          </div>
+          <span class="text-xs font-medium px-2.5 py-1 rounded-full capitalize ${m.role === 'admin' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600'}">${m.role}</span>
+        </div>`).join('');
+    }
+
+    async function loadTasks() {
+      const status = document.getElementById('filter-status').value;
+      const priority = document.getElementById('filter-priority').value;
+      let url = `/projects/${projectId}/tasks`;
+      const q = [];
+      if (status) q.push(`status=${status}`);
+      if (priority) q.push(`priority=${priority}`);
+      if (q.length) url += '?' + q.join('&');
+      try {
+        const tasks = await api.get(url);
+        renderKanban(tasks);
+      } catch (e) { showToast(e.message, 'error'); }
+    }
+
+    function renderKanban(tasks) {
+      const cols = { todo: [], in_progress: [], done: [] };
+      tasks.forEach(t => { if (cols[t.status]) cols[t.status].push(t); });
+      ['todo', 'in_progress', 'done'].forEach(status => {
+        document.getElementById(`count-${status}`).textContent = cols[status].length;
+        document.getElementById(`col-${status}`).innerHTML = cols[status].length
+          ? cols[status].map(t => taskCard(t)).join('')
+          : `<div class="flex items-center justify-center py-8 text-xs text-gray-300">No tasks here</div>`;
+      });
+    }
+
+    function taskCard(t) {
+      const currentUser = api.getUser();
+      const canEdit = isAdmin || t.assignee_id === currentUser?.id;
+      return `
+        <div class="bg-white border border-gray-100 rounded-xl p-3.5 hover:border-gray-300 hover:shadow-sm transition-all ${canEdit ? 'cursor-pointer' : 'cursor-default'} group"
+             onclick="${canEdit ? (isAdmin ? `openEditTaskModal('${t.id}')` : `openStatusModal('${t.id}','${t.status}','${t.title.replace(/'/g,"\\'")}')`) : ''}">
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <p class="text-sm font-medium text-gray-900 leading-snug ${t.status === 'done' ? 'line-through text-gray-400' : ''}">${t.title}</p>
+            ${priorityBadge(t.priority)}
+          </div>
+          ${t.description ? `<p class="text-xs text-gray-400 mb-3 line-clamp-2">${t.description}</p>` : ''}
+          <div class="flex items-center justify-between mt-2 pt-2 border-t border-gray-50">
+            ${t.assignee_name
+              ? `<div class="flex items-center gap-1.5">
+                  <div class="w-5 h-5 bg-gray-300 rounded-full flex items-center justify-center">
+                    <span class="text-white text-xs font-medium">${t.assignee_name[0].toUpperCase()}</span>
+                  </div>
+                  <span class="text-xs text-gray-500">${t.assignee_name}</span>
+                </div>`
+              : '<span class="text-xs text-gray-300 italic">Unassigned</span>'}
+            ${t.due_date ? `<span class="text-xs font-medium ${t.is_overdue ? 'text-red-500' : 'text-gray-400'}">${t.is_overdue ? '⚠ ' : ''}${formatDate(t.due_date)}</span>` : '<span></span>'}
+          </div>
+          ${isAdmin ? `
+          <div class="flex gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity justify-end">
+            <button onclick="event.stopPropagation(); deleteTask('${t.id}','${t.title.replace(/'/g,"\\'")}'')"
+              class="text-xs text-gray-300 hover:text-red-500 px-2 py-0.5 rounded hover:bg-red-50 transition-colors">Delete</button>
+          </div>` : ''}
+        </div>`;
+    }
+
+    // Status modal for members
+    let statusTaskId = null;
+    function openStatusModal(taskId, currentStatus, title) {
+      statusTaskId = taskId;
+      document.getElementById('status-task-title').textContent = title;
+      const statuses = [
+        { value: 'todo', label: 'To Do', color: 'bg-gray-100 text-gray-700 hover:bg-gray-200', dot: 'bg-gray-400' },
+        { value: 'in_progress', label: 'In Progress', color: 'bg-blue-50 text-blue-700 hover:bg-blue-100', dot: 'bg-blue-400' },
+        { value: 'done', label: 'Done', color: 'bg-green-50 text-green-700 hover:bg-green-100', dot: 'bg-green-400' },
+      ];
+      document.getElementById('status-options').innerHTML = statuses.map(s => `
+        <button onclick="updateTaskStatus('${s.value}')"
+          class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${s.value === currentStatus ? s.color + ' ring-2 ring-offset-1 ring-gray-300' : s.color}">
+          <div class="w-2.5 h-2.5 rounded-full ${s.dot}"></div>
+          ${s.label}
+          ${s.value === currentStatus ? '<svg class="w-4 h-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>' : ''}
+        </button>`).join('');
+      document.getElementById('status-modal').classList.remove('hidden');
+    }
+
+    function closeStatusModal() { document.getElementById('status-modal').classList.add('hidden'); }
+
+    async function updateTaskStatus(newStatus) {
+      try {
+        await api.put(`/tasks/${statusTaskId}`, { status: newStatus });
+        showToast('Task status updated');
+        closeStatusModal();
+        loadTasks();
+      } catch (e) { showToast(e.message, 'error'); }
+    }
+
+    // Task Modal
+    function openTaskModal() {
+      editingTaskId = null;
+      document.getElementById('task-modal-title').textContent = 'New Task';
+      document.getElementById('task-title').value = '';
+      document.getElementById('task-desc').value = '';
+      document.getElementById('task-status').value = 'todo';
+      document.getElementById('task-priority').value = 'medium';
+      document.getElementById('task-assignee').value = '';
+      document.getElementById('task-due').value = '';
+      document.getElementById('btn-save-task').textContent = 'Create Task';
+      document.getElementById('task-error').classList.add('hidden');
+      document.getElementById('task-modal').classList.remove('hidden');
+      setTimeout(() => document.getElementById('task-title').focus(), 100);
+    }
+
+    async function openEditTaskModal(taskId) {
+      try {
+        const t = await api.get(`/tasks/${taskId}`);
+        editingTaskId = taskId;
+        document.getElementById('task-modal-title').textContent = 'Edit Task';
+        document.getElementById('task-title').value = t.title;
+        document.getElementById('task-desc').value = t.description || '';
+        document.getElementById('task-status').value = t.status;
+        document.getElementById('task-priority').value = t.priority;
+        document.getElementById('task-assignee').value = t.assignee_id || '';
+        document.getElementById('task-due').value = t.due_date ? t.due_date.split('T')[0] : '';
+        document.getElementById('btn-save-task').textContent = 'Save Changes';
+        document.getElementById('task-error').classList.add('hidden');
+        document.getElementById('task-modal').classList.remove('hidden');
+      } catch (e) { showToast(e.message, 'error'); }
+    }
+
+    function closeTaskModal() { document.getElementById('task-modal').classList.add('hidden'); }
+
+    async function saveTask() {
+      const title = document.getElementById('task-title').value.trim();
+      const btn = document.getElementById('btn-save-task');
+      if (!title) {
+        document.getElementById('task-error-text').textContent = 'Title is required';
+        document.getElementById('task-error').classList.remove('hidden');
+        document.getElementById('task-title').focus();
+        return;
+      }
+      document.getElementById('task-error').classList.add('hidden');
+      btn.disabled = true;
+      btn.innerHTML = `<svg class="w-4 h-4 animate-spin mx-auto" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>`;
+      const payload = {
+        title,
+        description: document.getElementById('task-desc').value.trim() || null,
+        status: document.getElementById('task-status').value,
+        priority: document.getElementById('task-priority').value,
+        assignee_id: document.getElementById('task-assignee').value || null,
+        due_date: document.getElementById('task-due').value ? new Date(document.getElementById('task-due').value).toISOString() : null,
+      };
+      try {
+        if (editingTaskId) {
+          await api.put(`/tasks/${editingTaskId}`, payload);
+          showToast('Task updated successfully');
+        } else {
+          await api.post(`/projects/${projectId}/tasks`, payload);
+          showToast('Task created successfully');
+        }
+        closeTaskModal();
+        loadTasks();
+      } catch (e) {
+        document.getElementById('task-error-text').textContent = e.message;
+        document.getElementById('task-error').classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = editingTaskId ? 'Save Changes' : 'Create Task';
+      }
+    }
+
+    function deleteTask(taskId, title) {
+      showConfirm(`Delete task <strong>"${title}"</strong>? This cannot be undone.`, async () => {
+        try {
+          await api.delete(`/tasks/${taskId}`);
+          showToast('Task deleted');
+          loadTasks();
+        } catch (e) { showToast(e.message, 'error'); }
+      }, { title: 'Delete task?', confirmText: 'Delete', danger: true });
+    }
+
+    function switchTab(tab) {
+      const isBoard = tab === 'board';
+      document.getElementById('tab-content-board').classList.toggle('hidden', !isBoard);
+      document.getElementById('tab-content-members').classList.toggle('hidden', isBoard);
+      document.getElementById('tab-board').className = `px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-all ${isBoard ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700'}`;
+      document.getElementById('tab-members').className = `px-4 py-2.5 text-sm font-medium border-b-2 -mb-px transition-all ${!isBoard ? 'border-gray-900 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700'}`;
+    }
+
+    ['task-modal', 'status-modal'].forEach(id => {
+      document.getElementById(id).addEventListener('click', e => {
+        if (e.target.id === id) document.getElementById(id).classList.add('hidden');
+      });
+    });
+
+    loadProject();
+    loadMembers();
+    loadTasks();
+  </script>
+</body>
+</html>

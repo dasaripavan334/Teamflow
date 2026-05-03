@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TeamFlow — Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&display=swap" rel="stylesheet">
+  <style>* { font-family: 'DM Sans', sans-serif; }</style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <div id="navbar"></div>
+  <main class="max-w-7xl mx-auto px-6 py-8">
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h1 class="text-xl font-semibold text-gray-900" id="greeting">Dashboard</h1>
+        <p class="text-sm text-gray-500 mt-0.5">Here's what's happening across your projects.</p>
+      </div>
+      <a href="/projects.html" id="btn-new-project" class="hidden inline-flex items-center gap-2 bg-gray-900 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-800 active:scale-[0.99] transition-all">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        New Project
+      </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-8" id="stats-grid">
+      ${[...Array(6)].map(() => `<div class="bg-white border border-gray-200 rounded-xl p-5 animate-pulse"><div class="h-3 bg-gray-100 rounded w-16 mb-3"></div><div class="h-7 bg-gray-100 rounded w-10"></div></div>`).join('')}
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- My Tasks -->
+      <div class="lg:col-span-2 bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+          <h2 class="text-sm font-semibold text-gray-900">My Tasks</h2>
+          <span id="my-tasks-count" class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium"></span>
+        </div>
+        <div id="tasks-container">
+          <div class="flex items-center justify-center py-12">
+            <div class="w-5 h-5 border-2 border-gray-200 border-t-gray-900 rounded-full animate-spin"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Users panel (admin) -->
+      <div class="bg-white border border-gray-200 rounded-xl overflow-hidden" id="users-panel">
+        <div class="px-6 py-4 border-b border-gray-100">
+          <h2 class="text-sm font-semibold text-gray-900">All Users</h2>
+          <p class="text-xs text-gray-400 mt-0.5">Promote or demote roles</p>
+        </div>
+        <div id="users-list">
+          <div class="flex items-center justify-center py-12">
+            <div class="w-5 h-5 border-2 border-gray-200 border-t-gray-900 rounded-full animate-spin"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/env.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/navbar.js"></script>
+  <script>
+    requireAuth();
+    renderNavbar('dashboard');
+
+    const user = api.getUser();
+    const isAdmin = user?.role === 'admin';
+    const hour = new Date().getHours();
+    const greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+    document.getElementById('greeting').textContent = `${greet}, ${user?.name?.split(' ')[0] || ''}`;
+    if (isAdmin) document.getElementById('btn-new-project').classList.remove('hidden');
+    if (!isAdmin) document.getElementById('users-panel').classList.add('hidden');
+
+    async function loadDashboard() {
+      try {
+        const data = await api.get('/dashboard');
+        renderStats(data);
+        renderTasks(data.my_tasks);
+      } catch (e) { showToast(e.message, 'error'); }
+    }
+
+    function renderStats(data) {
+      const stats = [
+        { label: 'Projects', value: data.total_projects, color: 'text-gray-900' },
+        { label: 'Total Tasks', value: data.total_tasks, color: 'text-gray-900' },
+        { label: 'To Do', value: data.todo_count, color: 'text-gray-600' },
+        { label: 'In Progress', value: data.in_progress_count, color: 'text-blue-600' },
+        { label: 'Done', value: data.done_count, color: 'text-green-600' },
+        { label: 'Overdue', value: data.overdue_count, color: data.overdue_count > 0 ? 'text-red-500' : 'text-gray-900' },
+      ];
+      document.getElementById('stats-grid').innerHTML = stats.map(s => `
+        <div class="bg-white border border-gray-200 rounded-xl p-5 hover:border-gray-300 transition-colors">
+          <p class="text-xs text-gray-400 font-medium uppercase tracking-wide mb-2">${s.label}</p>
+          <p class="text-2xl font-semibold ${s.color}">${s.value}</p>
+        </div>`).join('');
+    }
+
+    function renderTasks(tasks) {
+      document.getElementById('my-tasks-count').textContent = tasks.length;
+      if (!tasks.length) {
+        document.getElementById('tasks-container').innerHTML = `
+          <div class="flex flex-col items-center justify-center py-12 px-6 text-center">
+            <div class="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center mb-3">
+              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            </div>
+            <p class="text-sm font-medium text-gray-900">No tasks assigned</p>
+            <p class="text-xs text-gray-400 mt-1">Tasks assigned to you will appear here</p>
+          </div>`;
+        return;
+      }
+      document.getElementById('tasks-container').innerHTML = tasks.map(t => `
+        <a href="/project-detail.html?id=${t.project_id}" class="flex items-center justify-between px-6 py-3.5 border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors group">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-2 h-2 rounded-full flex-shrink-0 ${t.status === 'done' ? 'bg-green-400' : t.is_overdue ? 'bg-red-400' : t.status === 'in_progress' ? 'bg-blue-400' : 'bg-gray-300'}"></div>
+            <div class="min-w-0">
+              <p class="text-sm font-medium text-gray-900 truncate ${t.status === 'done' ? 'line-through text-gray-400' : ''}">${t.title}</p>
+              <p class="text-xs text-gray-400 mt-0.5 flex items-center gap-1.5">
+                <span>${t.project_name}</span>
+                ${t.due_date ? `<span>·</span><span ${t.is_overdue ? 'class="text-red-500 font-medium"' : ''}>Due ${formatDate(t.due_date)}</span>` : ''}
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 flex-shrink-0 ml-4">
+            ${priorityBadge(t.priority)}
+            ${statusBadge(t.status)}
+          </div>
+        </a>`).join('');
+    }
+
+    async function loadUsers() {
+      if (!isAdmin) return;
+      try {
+        const users = await api.get('/auth/users');
+        renderUsers(users);
+      } catch (e) { showToast(e.message, 'error'); }
+    }
+
+    function renderUsers(users) {
+      document.getElementById('users-list').innerHTML = users.map(u => `
+        <div class="flex items-center justify-between px-5 py-3 border-b border-gray-50 last:border-0 hover:bg-gray-50 transition-colors">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${u.role === 'admin' ? 'bg-gray-900' : 'bg-gray-200'}">
+              <span class="${u.role === 'admin' ? 'text-white' : 'text-gray-600'} text-xs font-semibold">${u.name[0].toUpperCase()}</span>
+            </div>
+            <div class="min-w-0">
+              <p class="text-sm font-medium text-gray-900 truncate">${u.name}</p>
+              <p class="text-xs text-gray-400 truncate">${u.email}</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 flex-shrink-0 ml-2">
+            <span class="text-xs px-2 py-0.5 rounded-full font-medium ${u.role === 'admin' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-500'}">${u.role}</span>
+            ${u.email !== 'admin@gmail.com' ? `
+              <button onclick="${u.role === 'member' ? `promoteUser('${u.id}','${u.name}')` : `demoteUser('${u.id}','${u.name}')`}"
+                class="text-xs px-2.5 py-1 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 transition-colors font-medium">
+                ${u.role === 'member' ? '↑ Admin' : '↓ Member'}
+              </button>` : '<span class="text-xs text-gray-300 px-2">Default</span>'}
+          </div>
+        </div>`).join('');
+    }
+
+    async function promoteUser(id, name) {
+      showConfirm(`Promote <strong>${name}</strong> to Admin? They will be able to create projects and manage tasks.`, async () => {
+        try {
+          await api.put(`/auth/users/${id}/promote`);
+          showToast(`${name} promoted to Admin`);
+          loadUsers();
+        } catch (e) { showToast(e.message, 'error'); }
+      }, { title: 'Promote to Admin?', confirmText: 'Promote' });
+    }
+
+    async function demoteUser(id, name) {
+      showConfirm(`Demote <strong>${name}</strong> to Member? They will lose admin privileges.`, async () => {
+        try {
+          await api.put(`/auth/users/${id}/demote`);
+          showToast(`${name} demoted to Member`);
+          loadUsers();
+        } catch (e) { showToast(e.message, 'error'); }
+      }, { title: 'Demote to Member?', confirmText: 'Demote', danger: true });
+    }
+
+    loadDashboard();
+    loadUsers();
+  </script>
+</body>
+</html>
