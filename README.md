@@ -1,3 +1,6 @@
+Here's your updated README:
+
+```markdown
 # TeamFlow — Team Task Manager
 
 A full-stack project and task management web application with role-based access control, built with FastAPI, MySQL (Aiven Cloud), and vanilla HTML/Tailwind CSS.
@@ -8,9 +11,8 @@ A full-stack project and task management web application with role-based access 
 
 | Service | URL |
 |---------|-----|
-| Frontend | https://your-app.netlify.app |
-| Backend API | https://your-app.onrender.com |
-| API Docs | https://your-app.onrender.com/docs |
+| App | https://teamflow-s3c8.onrender.com |
+| API Docs | https://teamflow-s3c8.onrender.com/docs |
 
 ---
 
@@ -22,8 +24,7 @@ A full-stack project and task management web application with role-based access 
 | Backend | FastAPI (Python 3.11+) |
 | Database | MySQL 8.0 — Aiven Cloud |
 | Authentication | JWT (python-jose) + bcrypt |
-| Deploy Frontend | Netlify |
-| Deploy Backend | Render |
+| Deploy | Render (full stack — backend + frontend) |
 
 ---
 
@@ -52,7 +53,6 @@ teamflow/
 │   ├── dashboard.html           # Stats + My Tasks + User Management (admin)
 │   ├── projects.html            # Projects grid with member assignment
 │   ├── project-detail.html      # Kanban board + Members tab
-│   ├── netlify.toml             # Netlify routing config
 │   └── js/
 │       ├── env.js               # API base URL config
 │       ├── api.js               # Fetch wrapper + Toast + Confirm modal
@@ -238,14 +238,13 @@ teamflow/
 
 ### Prerequisites
 - Python 3.11+
-- Node.js (optional, for `npx serve`)
 - Aiven MySQL database
 - `ca.pem` SSL certificate from Aiven
 
 ### Backend
 
 ```bash
-cd backend
+cd teamflow/backend
 
 # Create virtual environment
 python -m venv venv
@@ -263,99 +262,46 @@ cp .env.example .env
 # Create database (run once)
 python create_db.py
 
-# Test connection and create tables (run once)
-python test_db.py
-
 # Start server
 uvicorn main:app --reload
 ```
 
 Backend runs at: http://localhost:8000
 Swagger docs: http://localhost:8000/docs
-
-### Frontend
-
-```bash
-# Update API URL
-# Edit frontend/js/env.js
-# Set: window.ENV_API_URL = 'http://localhost:8000';
-```
-
-Since the frontend is served by FastAPI as static files, just open:
-**http://localhost:8000** — login page loads automatically.
-
-Or serve separately:
-```bash
-cd frontend
-npx serve .   # runs at http://localhost:3000
-```
+App: http://localhost:8000 (frontend served automatically)
 
 ---
 
 ## Environment Variables
 
 ```env
-# Aiven MySQL
 DATABASE_URL=mysql+pymysql://user:password@host:port/teamflow
-
-# SSL Certificate
 SSL_CA_CERT_PATH=./ca.pem
-
-# JWT
 SECRET_KEY=your-super-secret-key-min-32-chars
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=60
-
-# CORS (set to your Netlify URL after deploy)
-FRONTEND_URL=https://your-app.netlify.app
+FRONTEND_URL=https://teamflow-s3c8.onrender.com
 ```
 
 ---
 
-## Deployment
+## Deployment — Render (Full Stack)
 
-### Backend → Render
-
-1. Push `backend/` folder to a GitHub repository
-2. Go to [render.com](https://render.com) → New Web Service
-3. Connect your GitHub repository
+1. Push code to GitHub
+2. Go to [render.com](https://render.com) → **New Web Service**
+3. Connect `dasaripavan334/Teamflow` repository
 4. Configure:
-   - **Build Command:** `pip install -r requirements.txt`
-   - **Start Command:** `uvicorn main:app --host 0.0.0.0 --port $PORT`
-   - **Python Version:** 3.11
-5. Add Environment Variables in Render dashboard:
-   - `DATABASE_URL`
-   - `SECRET_KEY`
-   - `ALGORITHM` = HS256
-   - `ACCESS_TOKEN_EXPIRE_MINUTES` = 60
-   - `FRONTEND_URL` = your Netlify URL
-6. Upload `ca.pem` as a **Secret File** at path `./ca.pem`
-7. Deploy — Render will auto-create tables and seed admin on first start
 
-### Frontend → Netlify
+| Setting | Value |
+|---------|-------|
+| Root Directory | `teamflow/backend` |
+| Runtime | Python 3 |
+| Build Command | `pip install -r requirements.txt` |
+| Start Command | `uvicorn main:app --host 0.0.0.0 --port $PORT` |
 
-1. Push `frontend/` folder to a GitHub repository
-2. Go to [netlify.com](https://netlify.com) → New Site from Git
-3. Connect your GitHub repository
-4. Configure:
-   - **Base directory:** `frontend`
-   - **Publish directory:** `frontend`
-   - **Build command:** (leave empty)
-5. Edit `js/env.js` — set `window.ENV_API_URL` to your Render URL
-6. Commit and push → Netlify auto-deploys
-7. Copy your Netlify URL → update `FRONTEND_URL` in Render
-
----
-
-## Default Admin Credentials
-
-```
-Email:    admin@gmail.com
-Password: 123
-```
-
-> The default admin is auto-created on first server startup.
-> Change the password after first login for production use.
+5. Add Environment Variables in Render dashboard
+6. Add `ca.pem` as a **Secret File** at path `./ca.pem`
+7. Deploy ✅
 
 ---
 
@@ -374,4 +320,6 @@ Password: 123
 ## Built By
 
 **TeamFlow** — Built as a full-stack internship assignment.
-Backend: FastAPI + Aiven MySQL | Frontend: HTML + Tailwind CSS | Deploy: Render + Netlify
+Stack: FastAPI + Aiven MySQL + HTML + Tailwind CSS | Deploy: Render
+```
+
