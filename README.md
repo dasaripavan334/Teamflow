@@ -1,6 +1,3 @@
-Here's your updated README:
-
-```markdown
 # TeamFlow — Team Task Manager
 
 A full-stack project and task management web application with role-based access control, built with FastAPI, MySQL (Aiven Cloud), and vanilla HTML/Tailwind CSS.
@@ -141,7 +138,7 @@ teamflow/
 
 ```
 1. Login
-   └── admin@gmail.com / 123
+   └── admin@gmail.com / [your admin password]
 
 2. Dashboard
    ├── View stats (projects, tasks, overdue)
@@ -266,8 +263,8 @@ python create_db.py
 uvicorn main:app --reload
 ```
 
-Backend runs at: http://localhost:8000
-Swagger docs: http://localhost:8000/docs
+Backend runs at: http://localhost:8000  
+Swagger docs: http://localhost:8000/docs  
 App: http://localhost:8000 (frontend served automatically)
 
 ---
@@ -319,7 +316,5 @@ FRONTEND_URL=https://teamflow-s3c8.onrender.com
 
 ## Built By
 
-**TeamFlow** — Built as a full-stack internship assignment.
+**TeamFlow** — Built as a full-stack internship assignment.  
 Stack: FastAPI + Aiven MySQL + HTML + Tailwind CSS | Deploy: Render
-```
-
